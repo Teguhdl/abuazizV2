@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController};
+use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController};
 
 
 
@@ -33,6 +33,13 @@ Route::resource('kelas', KelasController::class)->parameters([
 
 Route::resource('siswa', SiswaController::class);
 Route::resource('sekolah', SekolahController::class);
+Route::resource('rincian_biaya', RincianBiayaController::class)->parameters([
+    'rincian_biaya' => 'rincian_biaya'
+]);
+
+Route::resource('potongan_biaya', PotonganBiayaController::class)->parameters([
+    'potongan_biaya' => 'potongan_biaya'
+]);
 
 // contoh halaman setelah login
 Route::get('/dashboard', function () {

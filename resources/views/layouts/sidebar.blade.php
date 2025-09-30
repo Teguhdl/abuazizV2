@@ -29,6 +29,8 @@
                 <a href="{{ route('sekolah.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Sekolah</a> <!-- YAYASAN -->
                 <a href="{{ route('kelas.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Kelas</a> <!-- YAYASAN, SEKOLAH -->
                 <a href="{{ route('siswa.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Siswa</a><!-- YAYASAN, SEKOLAH -->
+                <a href="{{ route('rincian_biaya.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Rincian Biaya Transaksi</a><!-- YAYASAN, SEKOLAH -->
+                <a href="{{ route('potongan_biaya.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Potongan Biaya Transaksi</a><!-- YAYASAN, SEKOLAH -->
             </div>
         </div>
 

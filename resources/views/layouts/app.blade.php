@@ -10,6 +10,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <style>
     /* floating mode */
@@ -53,10 +57,15 @@
     @include('layouts.sidebar')
 
     {{-- Bagian kanan: header, konten, footer --}}
-    <div class="flex flex-col w-full">
-        @include('layouts.header')
+    <div class="flex flex-col w-full h-screen">
+        
+        {{-- Header tetap di atas --}}
+        <header class="flex-shrink-0">
+            @include('layouts.header')
+        </header>
 
-        <main class="flex-1 p-6">
+        {{-- Konten yang bisa scroll --}}
+        <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
             {{-- Breadcrumb --}}
             @hasSection('breadcrumb')
             <div class="flex items-center justify-between mb-4">
@@ -76,10 +85,14 @@
                 </ul>
             </div>
             @endif
+
             @yield('content')
         </main>
 
-        @include('layouts.footer')
+        {{-- Footer tetap di bawah --}}
+        <footer class="flex-shrink-0">
+            @include('layouts.footer')
+        </footer>
     </div>
     <script>
         lucide.createIcons();
@@ -148,6 +161,21 @@
             if (!sidebar.contains(e.target)) {
                 document.querySelectorAll('.submenu').forEach(s => s.classList.remove("show"));
             }
+        });
+
+         $(document).ready(function () {
+            $('#akunTable').DataTable({
+                responsive: true,
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    paginate: {
+                        previous: "Sebelumnya",
+                        next: "Berikutnya"
+                    }
+                }
+            });
         });
     </script>
 

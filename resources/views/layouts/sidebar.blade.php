@@ -9,7 +9,7 @@
     <!-- Menu -->
     <nav class="mt-4 space-y-2">
         <!-- Home -->
-        <a href="#" class="flex items-center px-4 py-2 hover:bg-gray-100">
+        <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-2 hover:bg-gray-100">
             <i data-lucide="home" class="w-5 h-5"></i>
             <span class="ml-2 sidebar-text">Home</span>
         </a>
@@ -25,9 +25,10 @@
             </button>
             <!-- Normal submenu -->
             <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
-                <a href="#" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Siswa</a>
-                <a href="#" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Guru</a>
-                <a href="#" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Kelas</a>
+                <a href="{{ route('akun.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Akun</a>    
+                <a href="{{ route('sekolah.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Sekolah</a> <!-- YAYASAN -->
+                <a href="{{ route('kelas.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Kelas</a> <!-- YAYASAN, SEKOLAH -->
+                <a href="{{ route('siswa.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Siswa</a><!-- YAYASAN, SEKOLAH -->
             </div>
         </div>
 

@@ -15,7 +15,7 @@ class PotonganBiaya extends Model
         'nama',
         'jumlah',
         'sekolah_id',
-         'transaksi'
+        'transaksi'
     ];
 
     public function sekolah()

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController};
+use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController , TransaksiPendaftaranController ,  TransaksiDaftarUlangController};
 
 
 
@@ -26,20 +26,22 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
-Route::resource('akun', AkunController::class);
+Route::resource('akun', AkunController::class)->middleware('auth');
 Route::resource('kelas', KelasController::class)->parameters([
     'kelas' => 'kelas' 
-]);
+])->middleware('auth');
 
-Route::resource('siswa', SiswaController::class);
-Route::resource('sekolah', SekolahController::class);
+Route::resource('siswa', SiswaController::class)->middleware('auth');
+Route::resource('sekolah', SekolahController::class)->middleware('auth');
 Route::resource('rincian_biaya', RincianBiayaController::class)->parameters([
     'rincian_biaya' => 'rincian_biaya'
-]);
+])->middleware('auth');
 
 Route::resource('potongan_biaya', PotonganBiayaController::class)->parameters([
     'potongan_biaya' => 'potongan_biaya'
-]);
+])->middleware('auth');
+Route::resource('transaksi_pendaftaran', TransaksiPendaftaranController::class)->middleware('auth');
+Route::resource('transaksi_daftar_ulang', TransaksiDaftarUlangController::class)->middleware('auth');
 
 // contoh halaman setelah login
 Route::get('/dashboard', function () {

@@ -8,6 +8,10 @@ use App\Models\RincianBiaya;
 use App\Models\TransaksiDaftarUlang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\JurnalHeader;
+use App\Models\JurnalDetail;
+use App\Models\Akun;
+use Illuminate\Support\Facades\DB;
 
 class TransaksiDaftarUlangController extends Controller
 {
@@ -38,7 +42,6 @@ class TransaksiDaftarUlangController extends Controller
         ]);
 
         $biayaTotal = RincianBiaya::where('transaksi', 'daftar_ulang')->sum('jumlah');
-
         $potonganPersen = $request->potongan_id
             ? (PotonganBiaya::find($request->potongan_id)->jumlah ?? 0)
             : 0;
@@ -49,18 +52,67 @@ class TransaksiDaftarUlangController extends Controller
             ? $finalTotal
             : $request->total_dibayar;
 
-        TransaksiDaftarUlang::create([
-            'siswa_id' => $request->siswa_id,
-            'no_daftar_ulang' => 'DU-' . strtoupper(Str::random(6)),
-            'tanggal_daftar' => $request->tanggal_daftar,
-            'biaya_total' => $finalTotal,
-            'potongan_id' => $request->potongan_id,
-            'total_dibayar' => $totalDibayar,
-            'metode_pembayaran' => $request->metode_pembayaran,
-            'jenis_pembayaran' => $request->jenis_pembayaran,
-            'status' => $totalDibayar >= $finalTotal ? 'lunas' : 'belum_lunas',
-        ]);
+        DB::transaction(function () use ($request, $finalTotal, $totalDibayar, $biayaTotal) {
+            // Simpan transaksi daftar ulang
+            $transaksi = TransaksiDaftarUlang::create([
+                'siswa_id' => $request->siswa_id,
+                'no_daftar_ulang' => 'DU-' . strtoupper(Str::random(6)),
+                'tanggal_daftar' => $request->tanggal_daftar,
+                'biaya_total' => $finalTotal,
+                'potongan_id' => $request->potongan_id,
+                'total_dibayar' => $totalDibayar,
+                'metode_pembayaran' => $request->metode_pembayaran,
+                'jenis_pembayaran' => $request->jenis_pembayaran,
+                'status' => $totalDibayar >= $finalTotal ? 'lunas' : 'belum_lunas',
+            ]);
 
-        return redirect()->route('transaksi_daftar_ulang.index')->with('success', 'Daftar ulang berhasil disimpan.');
+            // ----------------------------
+            // Buat Jurnal Umum
+            // ----------------------------
+            $header = JurnalHeader::create([
+                'nomor_jurnal' => 'DJ-' . date('YmdHis'), // DJ = Daftar Ulang
+                'tanggal' => $transaksi->tanggal_daftar,
+                'keterangan' => 'Transaksi daftar ulang siswa ID: ' . $transaksi->siswa_id,
+            ]);
+
+            $akunKas = Akun::where('nama_akun', 'Kas')->first();
+            $akunPendapatan = Akun::where('nama_akun', 'Pendapatan Daftar Ulang')->first();
+            $akunDiskon = $request->potongan_id
+                ? Akun::where('nama_akun', 'Diskon Daftar Ulang')->first()
+                : null;
+
+            // Debit: Kas = uang yang dibayarkan
+            JurnalDetail::create([
+                'jurnal_header_id' => $header->id,
+                'coa_id' => $akunKas->no_akun,
+                'debit' => $totalDibayar,
+                'kredit' => 0,
+                'keterangan' => 'Pembayaran daftar ulang siswa ID: ' . $transaksi->siswa_id,
+            ]);
+
+            // Debit: Diskon = selisih biaya total dan yang dibayar
+            if ($akunDiskon) {
+                $jumlahDiskon = $biayaTotal - $totalDibayar;
+
+                JurnalDetail::create([
+                    'jurnal_header_id' => $header->id,
+                    'coa_id' => $akunDiskon->no_akun,
+                    'debit' => $jumlahDiskon,
+                    'kredit' => 0,
+                    'keterangan' => 'Diskon daftar ulang siswa ID: ' . $transaksi->siswa_id,
+                ]);
+            }
+
+            // Kredit: Pendapatan = total biaya asli sebelum diskon
+            JurnalDetail::create([
+                'jurnal_header_id' => $header->id,
+                'coa_id' => $akunPendapatan->no_akun,
+                'debit' => 0,
+                'kredit' => $biayaTotal,
+                'keterangan' => 'Pendapatan daftar ulang siswa ID: ' . $transaksi->siswa_id,
+            ]);
+        });
+
+        return redirect()->route('transaksi_daftar_ulang.index')->with('success', 'Daftar ulang berhasil disimpan dan dijurnal.');
     }
 }

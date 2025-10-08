@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pendapatan;
-use Illuminate\Http\Request;
+use App\Models\JurnalHeader;
+use App\Models\JurnalDetail;
+use App\Models\Akun;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class PendapatanController extends Controller
 {
@@ -28,17 +32,49 @@ class PendapatanController extends Controller
             'nominal' => 'required|numeric|min:0',
         ]);
 
-        Pendapatan::create([
-            'kode' => 'PD-' . strtoupper(Str::random(5)),
-            'nama' => $request->nama,
-            'tanggal_pendapatan' => $request->tanggal_pendapatan,
-            'keterangan' => $request->keterangan,
-            'nominal' => $request->nominal,
-        ]);
+        DB::transaction(function () use ($request) {
+            // Simpan pendapatan
+            $pendapatan = Pendapatan::create([
+                'kode' => 'PD-' . strtoupper(Str::random(5)),
+                'nama' => $request->nama,
+                'tanggal_pendapatan' => $request->tanggal_pendapatan,
+                'keterangan' => $request->keterangan,
+                'nominal' => $request->nominal,
+            ]);
 
-        return redirect()->route('pendapatan.index')->with('success', 'Pendapatan berhasil ditambahkan.');
+            // ----------------------------
+            // Buat Jurnal Umum
+            // ----------------------------
+            $header = JurnalHeader::create([
+                'nomor_jurnal' => 'PJ-' . date('YmdHis'), // PJ = Pendapatan
+                'tanggal' => $pendapatan->tanggal_pendapatan,
+                'keterangan' => 'Pendapatan: ' . $pendapatan->nama,
+            ]);
+
+            // Debit = Kas/Bank
+            $akunKas = Akun::where('nama_akun', 'Kas')->first();
+            JurnalDetail::create([
+                'jurnal_header_id' => $header->id,
+                'coa_id' => $akunKas->no_akun,
+                'debit' => $pendapatan->nominal,
+                'kredit' => 0,
+                'keterangan' => 'Penerimaan pendapatan: ' . $pendapatan->nama,
+            ]);
+
+            // Kredit = Pendapatan (akun pendapatan umum)
+            $akunPendapatan = Akun::where('nama_akun', 'Pendapatan Lain-Lain')->first();
+            JurnalDetail::create([
+                'jurnal_header_id' => $header->id,
+                'coa_id' => $akunPendapatan->no_akun,
+                'debit' => 0,
+                'kredit' => $pendapatan->nominal,
+                'keterangan' => 'Pendapatan: ' . $pendapatan->nama,
+            ]);
+        });
+
+        return redirect()->route('pendapatan.index')->with('success', 'Pendapatan berhasil ditambahkan dan dijurnal.');
     }
-
+    
     public function edit($id)
     {
         $data = Pendapatan::findOrFail($id);

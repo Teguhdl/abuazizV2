@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController , TransaksiPendaftaranController ,  TransaksiDaftarUlangController , PendapatanController};
+use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController , TransaksiPendaftaranController ,  TransaksiDaftarUlangController , PendapatanController , PembayaranBebanController, JurnalUmumController , BukuBesarController};
 
 
 
@@ -40,6 +40,9 @@ Route::resource('potongan_biaya', PotonganBiayaController::class)->parameters([
 Route::resource('transaksi_pendaftaran', TransaksiPendaftaranController::class)->middleware('auth');
 Route::resource('transaksi_daftar_ulang', TransaksiDaftarUlangController::class)->middleware('auth');
 Route::resource('pendapatan', PendapatanController::class)->middleware('auth');
+Route::resource('pembayaran_beban', PembayaranBebanController::class)->middleware('auth');
+Route::get('jurnal', [JurnalUmumController::class, 'index'])->middleware('auth')->name('jurnal');
+Route::get('buku_besar', [BukuBesarController::class, 'index'])->middleware('auth')->name('buku_besar');
 
 // contoh halaman setelah login
 Route::get('/dashboard', function () {

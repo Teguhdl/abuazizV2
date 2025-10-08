@@ -16,6 +16,7 @@ class TransaksiPendaftaran extends Model
         'no_pendaftaran',
         'tanggal_daftar',
         'biaya_total',
+        'potongan_id',
         'total_dibayar',
         'metode_pembayaran',
         'status',

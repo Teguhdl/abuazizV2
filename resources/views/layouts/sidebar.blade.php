@@ -47,6 +47,7 @@
                 <a href="{{ route('transaksi_pendaftaran.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pendaftaran Siswa</a>
                 <a href="{{ route('transaksi_daftar_ulang.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Daftar Ulang Siswa</a>
                 <a href="{{ route('pendapatan.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pendapatan</a>
+                <a href="{{ route('pembayaran_beban.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pembayaran Beban</a>
 
             </div>
         </div>
@@ -61,8 +62,8 @@
                 <i data-lucide="chevron-down" class="w-4 h-4 transition-transform"></i>
             </button>
             <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
-                <a href="#" class="block px-2 py-1 hover:bg-gray-100 rounded">Laporan Harian</a>
-                <a href="#" class="block px-2 py-1 hover:bg-gray-100 rounded">Laporan Bulanan</a>
+                <a href="{{ route('jurnal') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Jurnal Umum</a>
+                <a href="{{ route('buku_besar') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Buku Besar</a>
             </div>
         </div>
     </nav>

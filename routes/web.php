@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController , TransaksiPendaftaranController ,  TransaksiDaftarUlangController};
+use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController , TransaksiPendaftaranController ,  TransaksiDaftarUlangController , PendapatanController};
 
 
 
@@ -16,10 +16,7 @@ use App\Http\Controllers\{AuthController, AkunController, SekolahController, Sis
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
+Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -42,6 +39,7 @@ Route::resource('potongan_biaya', PotonganBiayaController::class)->parameters([
 ])->middleware('auth');
 Route::resource('transaksi_pendaftaran', TransaksiPendaftaranController::class)->middleware('auth');
 Route::resource('transaksi_daftar_ulang', TransaksiDaftarUlangController::class)->middleware('auth');
+Route::resource('pendapatan', PendapatanController::class)->middleware('auth');
 
 // contoh halaman setelah login
 Route::get('/dashboard', function () {

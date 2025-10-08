@@ -46,6 +46,7 @@
             <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
                 <a href="{{ route('transaksi_pendaftaran.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pendaftaran Siswa</a>
                 <a href="{{ route('transaksi_daftar_ulang.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Daftar Ulang Siswa</a>
+                <a href="{{ route('pendapatan.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pendapatan</a>
 
             </div>
         </div>

@@ -38,7 +38,14 @@ Route::resource('potongan_biaya', PotonganBiayaController::class)->parameters([
     'potongan_biaya' => 'potongan_biaya'
 ])->middleware('auth');
 Route::resource('transaksi_pendaftaran', TransaksiPendaftaranController::class)->middleware('auth');
+Route::get('/transaksi_pendaftaran/{id}/bayar', [TransaksiPendaftaranController::class, 'bayar'])->name('transaksi_pendaftaran.bayar');
+Route::post('/transaksi_pendaftaran/{id}/bayar', [TransaksiPendaftaranController::class, 'bayarStore'])->name('transaksi_pendaftaran.bayar.store');
+
 Route::resource('transaksi_daftar_ulang', TransaksiDaftarUlangController::class)->middleware('auth');
+Route::get('/transaksi_daftar_ulang/{id}/bayar', [TransaksiDaftarUlangController::class, 'bayar'])->name('transaksi_daftar_ulang.bayar');
+Route::post('/transaksi_daftar_ulang/{id}/bayar', [TransaksiDaftarUlangController::class, 'bayarStore'])->name('transaksi_daftar_ulang.bayar.store');
+
+
 Route::resource('pendapatan', PendapatanController::class)->middleware('auth');
 Route::resource('pembayaran_beban', PembayaranBebanController::class)->middleware('auth');
 Route::get('jurnal', [JurnalUmumController::class, 'index'])->middleware('auth')->name('jurnal');

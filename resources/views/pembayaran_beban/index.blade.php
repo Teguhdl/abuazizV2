@@ -22,7 +22,6 @@
                     <th class="border px-4 py-2">Tanggal Pembayaran</th>
                     <th class="border px-4 py-2">Nominal</th>
                     <th class="border px-4 py-2">Keterangan</th>
-                    <th class="border px-4 py-2">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,10 +35,10 @@
                         </td>
                         <td class="border px-4 py-2">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
                         <td class="border px-4 py-2">{{ $item->keterangan ?? '-' }}</td>
-                        <td class="border px-4 py-2 text-center">
+                        <!-- <td class="border px-4 py-2 text-center">
                             <a href="{{ route('pembayaran_beban.edit', $item->id) }}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm">Edit</a>
                             <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm" onclick="hapus({{ $item->id }})">Hapus</button>
-                        </td>
+                        </td> -->
                     </tr>
                 @empty
                     <tr>
@@ -50,7 +49,7 @@
         </table>
     </div>
 </div>
-
+<!-- 
 <script>
 function hapus(id) {
     if (confirm('Yakin ingin menghapus data ini?')) {
@@ -61,5 +60,5 @@ function hapus(id) {
           .then(data => { if (data.success) location.reload(); });
     }
 }
-</script>
+</script> -->
 @endsection

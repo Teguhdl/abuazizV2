@@ -53,6 +53,12 @@
                             class="inline-flex items-center bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm">
                             <i data-lucide="info" class="w-4 h-4 mr-1"></i> Detail
                         </a>
+                        @if($item->status == 'belum_lunas')
+                        <a href="{{ route('transaksi_pendaftaran.bayar', $item->id) }}"
+                            class="inline-flex items-center bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm">
+                            <i data-lucide="credit-card" class="w-4 h-4 mr-1"></i> Bayar Sisa
+                        </a>
+                        @endif
 
                         <!-- <button type="button"
                             class="inline-flex items-center bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm btn-delete"
@@ -74,24 +80,24 @@
 </div>
 
 <script>
-document.querySelectorAll('.btn-delete').forEach(button => {
-    button.addEventListener('click', function() {
-        const id = this.dataset.id;
-        Swal.fire({
-            title: 'Yakin hapus?',
-            text: "Data transaksi ini akan dihapus permanen!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById(`delete-form-${id}`).submit();
-            }
+    document.querySelectorAll('.btn-delete').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            Swal.fire({
+                title: 'Yakin hapus?',
+                text: "Data transaksi ini akan dihapus permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`delete-form-${id}`).submit();
+                }
+            });
         });
     });
-});
 </script>
 @endsection

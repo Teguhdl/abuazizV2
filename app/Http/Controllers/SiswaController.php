@@ -47,13 +47,36 @@ class SiswaController extends Controller
     public function update(Request $request, Siswa $siswa)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'jenis_kelamin' => 'required|in:L,P',
-            'kelas_id' => 'required|exists:kelas,id',
+            'nama'           => 'required|string|max:255',
+            'jenis_kelamin'  => 'required|in:L,P',
+            'tempat_lahir'   => 'nullable|string|max:255',
+            'tanggal_lahir'  => 'nullable|date',
+            'alamat'         => 'nullable|string',
+            'telepon'        => 'nullable|string|max:20',
+            'nama_ayah'      => 'nullable|string|max:255',
+            'telepon_ayah'   => 'nullable|string|max:20',
+            'nama_ibu'       => 'nullable|string|max:255',
+            'telepon_ibu'    => 'nullable|string|max:20',
+            'kelas_id'       => 'required|exists:kelas,id',
+            'status'         => 'nullable|in:aktif,nonaktif',
         ]);
 
-        $siswa->update($request->all());
-        return redirect()->route('siswa.index')->with('success', 'Siswa berhasil diperbarui');
+        $siswa->update($request->only([
+            'nama',
+            'jenis_kelamin',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'alamat',
+            'telepon',
+            'nama_ayah',
+            'telepon_ayah',
+            'nama_ibu',
+            'telepon_ibu',
+            'kelas_id',
+            'status',
+        ]));
+
+        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diperbarui.');
     }
 
     public function destroy(Siswa $siswa)

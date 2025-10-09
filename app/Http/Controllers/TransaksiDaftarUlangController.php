@@ -12,6 +12,7 @@ use App\Models\JurnalHeader;
 use App\Models\JurnalDetail;
 use App\Models\Akun;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class TransaksiDaftarUlangController extends Controller
 {
@@ -70,7 +71,7 @@ class TransaksiDaftarUlangController extends Controller
             // Buat Jurnal Umum
             // ----------------------------
             $header = JurnalHeader::create([
-                'nomor_jurnal' => 'DJ-' . date('YmdHis'), // DJ = Daftar Ulang
+                'nomor_jurnal' => 'DJ-' . date('YmdHis'),
                 'tanggal' => $transaksi->tanggal_daftar,
                 'keterangan' => 'Transaksi daftar ulang siswa ID: ' . $transaksi->siswa_id,
             ]);
@@ -80,39 +81,153 @@ class TransaksiDaftarUlangController extends Controller
             $akunDiskon = $request->potongan_id
                 ? Akun::where('nama_akun', 'Diskon Daftar Ulang')->first()
                 : null;
+            $akunPiutang = Akun::where('nama_akun', 'Piutang Daftar Ulang')->first();
 
-            // Debit: Kas = uang yang dibayarkan
-            JurnalDetail::create([
-                'jurnal_header_id' => $header->id,
-                'coa_id' => $akunKas->no_akun,
-                'debit' => $totalDibayar,
-                'kredit' => 0,
-                'keterangan' => 'Pembayaran daftar ulang siswa ID: ' . $transaksi->siswa_id,
-            ]);
-
-            // Debit: Diskon = selisih biaya total dan yang dibayar
-            if ($akunDiskon) {
-                $jumlahDiskon = $biayaTotal - $totalDibayar;
-
+            // === Pembayaran Lunas ===
+            if ($request->jenis_pembayaran === 'Lunas') {
+                // Debit Kas
                 JurnalDetail::create([
                     'jurnal_header_id' => $header->id,
-                    'coa_id' => $akunDiskon->no_akun,
-                    'debit' => $jumlahDiskon,
+                    'coa_id' => $akunKas->no_akun,
+                    'debit' => $totalDibayar,
                     'kredit' => 0,
-                    'keterangan' => 'Diskon daftar ulang siswa ID: ' . $transaksi->siswa_id,
+                    'keterangan' => 'Pembayaran daftar ulang siswa ID: ' . $transaksi->siswa_id,
+                ]);
+
+                // Jika ada diskon
+                if ($akunDiskon) {
+                    $jumlahDiskon = $biayaTotal - $finalTotal;
+                    JurnalDetail::create([
+                        'jurnal_header_id' => $header->id,
+                        'coa_id' => $akunDiskon->no_akun,
+                        'debit' => $jumlahDiskon,
+                        'kredit' => 0,
+                        'keterangan' => 'Diskon daftar ulang siswa ID: ' . $transaksi->siswa_id,
+                    ]);
+                }
+
+                // Kredit Pendapatan
+                JurnalDetail::create([
+                    'jurnal_header_id' => $header->id,
+                    'coa_id' => $akunPendapatan->no_akun,
+                    'debit' => 0,
+                    'kredit' => $finalTotal,
+                    'keterangan' => 'Pendapatan daftar ulang siswa ID: ' . $transaksi->siswa_id,
                 ]);
             }
 
-            // Kredit: Pendapatan = total biaya asli sebelum diskon
-            JurnalDetail::create([
-                'jurnal_header_id' => $header->id,
-                'coa_id' => $akunPendapatan->no_akun,
-                'debit' => 0,
-                'kredit' => $biayaTotal,
-                'keterangan' => 'Pendapatan daftar ulang siswa ID: ' . $transaksi->siswa_id,
-            ]);
+            // === Pembayaran Kredit ===
+            else {
+                $sisaPiutang = $finalTotal - $totalDibayar;
+
+                // Debit Kas (yang dibayar)
+                if ($totalDibayar > 0) {
+                    JurnalDetail::create([
+                        'jurnal_header_id' => $header->id,
+                        'coa_id' => $akunKas->no_akun,
+                        'debit' => $totalDibayar,
+                        'kredit' => 0,
+                        'keterangan' => 'Pembayaran awal daftar ulang siswa ID: ' . $transaksi->siswa_id,
+                    ]);
+                }
+
+                // Debit Piutang (yang belum dibayar)
+                if ($sisaPiutang > 0) {
+                    JurnalDetail::create([
+                        'jurnal_header_id' => $header->id,
+                        'coa_id' => $akunPiutang->no_akun,
+                        'debit' => $sisaPiutang,
+                        'kredit' => 0,
+                        'keterangan' => 'Piutang daftar ulang siswa ID: ' . $transaksi->siswa_id,
+                    ]);
+                }
+
+                // Kredit Pendapatan (total biaya setelah potongan)
+                JurnalDetail::create([
+                    'jurnal_header_id' => $header->id,
+                    'coa_id' => $akunPendapatan->no_akun,
+                    'debit' => 0,
+                    'kredit' => $finalTotal,
+                    'keterangan' => 'Pendapatan daftar ulang siswa ID: ' . $transaksi->siswa_id,
+                ]);
+            }
         });
 
         return redirect()->route('transaksi_daftar_ulang.index')->with('success', 'Daftar ulang berhasil disimpan dan dijurnal.');
+    }
+
+    public function show($id)
+    {
+        $data = TransaksiDaftarUlang::with(['siswa.kelas', 'potongan'])->findOrFail($id);
+
+        return view('transaksi_daftar_ulang.show', compact('data'));
+    }
+
+    public function bayar($id)
+    {
+        $data = TransaksiDaftarUlang::with('siswa')->findOrFail($id);
+        if ($data->status === 'lunas') {
+            return redirect()->route('transaksi_daftar_ulang.show', $id)->with('info', 'Transaksi sudah lunas.');
+        }
+
+        // Hitung sisa pembayaran
+        $data->sisa_pembayaran = $data->biaya_total - $data->total_dibayar;
+
+        return view('transaksi_daftar_ulang.bayar', compact('data'));
+    }
+
+    public function bayarStore(Request $request, $id)
+    {
+        $request->validate([
+            'jumlah_bayar' => 'required|numeric|min:1',
+            'metode_pembayaran' => 'required|in:Tunai,Transfer',
+        ]);
+
+        $transaksi = TransaksiDaftarUlang::findOrFail($id);
+
+        DB::transaction(function () use ($request, $transaksi) {
+            $sisa = $transaksi->biaya_total - $transaksi->total_dibayar;
+            $bayar = min($request->jumlah_bayar, $sisa);
+
+            // Update total dibayar & status
+            $transaksi->total_dibayar += $bayar;
+            if ($transaksi->total_dibayar >= $transaksi->biaya_total) {
+                $transaksi->status = 'lunas';
+            }
+            $transaksi->save();
+
+            // ----------------------------
+            // Buat Jurnal Pelunasan Kredit
+            // ----------------------------
+            $header = JurnalHeader::create([
+                'nomor_jurnal' => 'JD-' . date('YmdHis'),
+                'tanggal' => Carbon::now(),
+                'keterangan' => 'Pelunasan daftar ulang siswa: ' . $transaksi->siswa->nama,
+            ]);
+
+            $akunKas = Akun::where('nama_akun', 'Kas')->first();
+            $akunPiutang = Akun::where('nama_akun', 'Piutang Daftar Ulang')->first();
+
+            // Debit: Kas (uang masuk)
+            JurnalDetail::create([
+                'jurnal_header_id' => $header->id,
+                'coa_id' => $akunKas->no_akun,
+                'debit' => $bayar,
+                'kredit' => 0,
+                'keterangan' => 'Pelunasan daftar ulang siswa: ' . $transaksi->siswa->nama,
+            ]);
+
+            // Kredit: Piutang (berkurang)
+            JurnalDetail::create([
+                'jurnal_header_id' => $header->id,
+                'coa_id' => $akunPiutang->no_akun,
+                'debit' => 0,
+                'kredit' => $bayar,
+                'keterangan' => 'Pelunasan piutang daftar ulang siswa: ' . $transaksi->siswa->nama,
+            ]);
+        });
+
+        return redirect()->route('transaksi_daftar_ulang.show', $id)
+            ->with('success', 'Pelunasan berhasil disimpan dan dijurnal.');
     }
 }

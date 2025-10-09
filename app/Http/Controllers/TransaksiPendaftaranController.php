@@ -35,7 +35,7 @@ class TransaksiPendaftaranController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi input
+        // Validasi input (sama seperti sebelumnya)
         $request->validate([
             'nis' => 'required|string|max:50|unique:siswa,nis',
             'nama' => 'required|string|max:255',
@@ -55,13 +55,15 @@ class TransaksiPendaftaranController extends Controller
             'total_dibayar' => 'required|numeric|min:0',
         ]);
 
-        // Hitung biaya final
+        // Hitung biaya final dan potongan (di luar transaction)
         $biayaTotal = RincianBiaya::where('transaksi', 'pendaftaran')->sum('jumlah');
         $potonganPersen = $request->potongan_id
             ? (PotonganBiaya::find($request->potongan_id)->jumlah ?? 0)
             : 0;
-        $finalTotal = $biayaTotal - ($biayaTotal * $potonganPersen / 100);
-        DB::transaction(function () use ($request, $finalTotal, $biayaTotal) {
+        $jumlahDiskon = $biayaTotal * ($potonganPersen / 100); // jumlah diskon nominal
+        $finalTotal = $biayaTotal - $jumlahDiskon;
+
+        DB::transaction(function () use ($request, $finalTotal, $biayaTotal, $potonganPersen, $jumlahDiskon) {
             // Simpan data siswa
             $siswa = Siswa::create([
                 'nis' => $request->nis,
@@ -91,7 +93,7 @@ class TransaksiPendaftaranController extends Controller
             ]);
 
             // ----------------------------
-            // Buat Jurnal Umum
+            // Buat Jurnal Umum (balance)
             // ----------------------------
             $header = JurnalHeader::create([
                 'nomor_jurnal' => 'JP-' . date('YmdHis'),
@@ -99,25 +101,48 @@ class TransaksiPendaftaranController extends Controller
                 'keterangan' => 'Transaksi pendaftaran siswa: ' . $siswa->nama,
             ]);
 
+            // Ambil akun (cek jika tidak ditemukan beri exception agar rollback)
             $akunKas = Akun::where('nama_akun', 'Kas')->first();
             $akunPendapatan = Akun::where('nama_akun', 'Pendapatan Pendaftaran')->first();
-            $akunDiskon = $request->potongan_id
-                ? Akun::where('nama_akun', 'Diskon Pendaftaran')->first()
-                : null;
+            $akunDiskon = Akun::where('nama_akun', 'Diskon Pendaftaran')->first();
+            $akunPiutang = Akun::where('nama_akun', 'Piutang Pendaftaran')->first();
 
-            // Debit: Kas = uang yang dibayarkan
-            JurnalDetail::create([
-                'jurnal_header_id' => $header->id,
-                'coa_id' => $akunKas->no_akun,
-                'debit' => $transaksi->total_dibayar,
-                'kredit' => 0,
-                'keterangan' => 'Pembayaran pendaftaran siswa: ' . $siswa->nama,
-            ]);
+            if (!$akunKas || !$akunPendapatan) {
+                throw new \Exception('Akun Kas atau Pendapatan Pendaftaran tidak ditemukan.');
+            }
 
-            // Debit: Diskon Pendaftaran = selisih antara total biaya dan yang dibayar
-            if ($akunDiskon) {
-                $jumlahDiskon = $biayaTotal - $transaksi->total_dibayar;
+            // jumlah yang diterima tunai/transfer saat ini
+            $jumlahKas = $transaksi->total_dibayar;
+            // piutang = selisih antara finalTotal dan yang sudah dibayar
+            $jumlahPiutang = max(0, $finalTotal - $transaksi->total_dibayar);
 
+            // Debit: Kas (jika ada penerimaan)
+            if ($jumlahKas > 0) {
+                JurnalDetail::create([
+                    'jurnal_header_id' => $header->id,
+                    'coa_id' => $akunKas->no_akun,
+                    'debit' => $jumlahKas,
+                    'kredit' => 0,
+                    'keterangan' => 'Pembayaran pendaftaran siswa: ' . $siswa->nama,
+                ]);
+            }
+
+            // Debit: Piutang (jika belum dibayar penuh)
+            if ($jumlahPiutang > 0) {
+                if (!$akunPiutang) {
+                    throw new \Exception('Akun Piutang Siswa tidak ditemukan.');
+                }
+                JurnalDetail::create([
+                    'jurnal_header_id' => $header->id,
+                    'coa_id' => $akunPiutang->no_akun,
+                    'debit' => $jumlahPiutang,
+                    'kredit' => 0,
+                    'keterangan' => 'Piutang pendaftaran siswa: ' . $siswa->nama,
+                ]);
+            }
+
+            // Debit: Diskon (jika ada && akun diskon ditemukan)
+            if ($jumlahDiskon > 0 && $akunDiskon) {
                 JurnalDetail::create([
                     'jurnal_header_id' => $header->id,
                     'coa_id' => $akunDiskon->no_akun,
@@ -127,7 +152,7 @@ class TransaksiPendaftaranController extends Controller
                 ]);
             }
 
-            // Kredit: Pendapatan Pendaftaran = total biaya asli
+            // Kredit: Pendapatan = biayaTotal (nilai bruto)
             JurnalDetail::create([
                 'jurnal_header_id' => $header->id,
                 'coa_id' => $akunPendapatan->no_akun,
@@ -139,7 +164,6 @@ class TransaksiPendaftaranController extends Controller
 
         return redirect()->route('transaksi_pendaftaran.index')->with('success', 'Pendaftaran berhasil disimpan dan dijurnal.');
     }
-
 
     public function show($id)
     {
@@ -155,4 +179,73 @@ class TransaksiPendaftaranController extends Controller
         $data->delete();
         return response()->json(['success' => true]);
     }
+
+    public function bayar($id)
+    {
+        $data = TransaksiPendaftaran::with('siswa')->findOrFail($id);
+        if ($data->status === 'lunas') {
+            return redirect()->route('transaksi_pendaftaran.index')->with('info', 'Transaksi sudah lunas.');
+        }
+
+        return view('transaksi_pendaftaran.bayar', compact('data'));
+    }
+
+  public function bayarStore(Request $request, $id)
+{
+    $request->validate([
+        'jumlah_bayar' => 'required|numeric|min:1',
+        'metode_pembayaran' => 'required|in:Tunai,Transfer',
+    ]);
+
+    $transaksi = TransaksiPendaftaran::with('siswa')->findOrFail($id);
+
+    DB::transaction(function () use ($request, $transaksi) {
+        $sisa = $transaksi->biaya_total - $transaksi->total_dibayar;
+        $bayar = min($request->jumlah_bayar, $sisa);
+
+        // Update total dibayar & status
+        $transaksi->total_dibayar += $bayar;
+        if ($transaksi->total_dibayar >= $transaksi->biaya_total) {
+            $transaksi->status = 'lunas';
+        }
+        $transaksi->save();
+
+        // ----------------------------
+        // Jurnal Pelunasan (Kas & Piutang)
+        // ----------------------------
+        $header = JurnalHeader::create([
+            'nomor_jurnal' => 'JP-' . date('YmdHis'),
+            'tanggal' => Carbon::now(),
+            'keterangan' => 'Pelunasan pendaftaran siswa: ' . $transaksi->siswa->nama,
+        ]);
+
+        $akunKas = Akun::where('nama_akun', 'Kas')->first();
+        $akunPiutang = Akun::where('nama_akun', 'Piutang Pendaftaran')->first();
+
+        if (!$akunKas || !$akunPiutang) {
+            throw new \Exception('Akun Kas atau Piutang Siswa tidak ditemukan.');
+        }
+
+        // Debit: Kas (uang masuk)
+        JurnalDetail::create([
+            'jurnal_header_id' => $header->id,
+            'coa_id' => $akunKas->no_akun,
+            'debit' => $bayar,
+            'kredit' => 0,
+            'keterangan' => 'Pelunasan pendaftaran siswa: ' . $transaksi->siswa->nama,
+        ]);
+
+        // Kredit: Piutang (mengurangi piutang)
+        JurnalDetail::create([
+            'jurnal_header_id' => $header->id,
+            'coa_id' => $akunPiutang->no_akun,
+            'debit' => 0,
+            'kredit' => $bayar,
+            'keterangan' => 'Pengurangan piutang pendaftaran siswa: ' . $transaksi->siswa->nama,
+        ]);
+    });
+
+    return redirect()->route('transaksi_pendaftaran.index')->with('success', 'Pelunasan berhasil disimpan dan dijurnal.');
+}
+
 }

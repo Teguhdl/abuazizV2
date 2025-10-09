@@ -47,42 +47,46 @@
                             <td class="px-4 py-2 border">{{ $item->siswa->nis }}</td>
                             <td class="px-4 py-2 border">{{ $item->siswa->nama }}</td>
                             <td class="px-4 py-2 border">{{ $item->siswa->kelas->nama ?? '-' }}</td>
-                            <td class="px-4 py-2 border">{{ \Carbon\Carbon::parse($item->tanggal_daftar_ulang)->format('d/m/Y') }}</td>
+                            <td class="px-4 py-2 border">
+                                {{ \Carbon\Carbon::parse($item->tanggal_daftar_ulang)->format('d/m/Y') }}
+                            </td>
                             <td class="px-4 py-2 border">{{ $item->metode_pembayaran }}</td>
                             <td class="px-4 py-2 border">
                                 <span class="px-2 py-1 text-sm rounded 
-                                    {{ $item->jenis_pembayaran == 'Lunas' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ $item->status }}
+                                    {{ $item->status == 'lunas' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                    {{ ucfirst($item->status) }}
                                 </span>
                             </td>
                             <td class="px-4 py-2 border">Rp {{ number_format($item->biaya_total, 0, ',', '.') }}</td>
                             <td class="px-4 py-2 border">Rp {{ number_format($item->total_dibayar, 0, ',', '.') }}</td>
                             <td class="px-4 py-2 border text-center">
-                                <div class="flex justify-center space-x-2">
+                                <div class="flex flex-col items-center space-y-2">
                                     <a href="{{ route('transaksi_daftar_ulang.show', $item->id) }}"
-                                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">Detail</a>
-                                    <!-- <a href="{{ route('transaksi_daftar_ulang.edit', $item->id) }}"
-                                        class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm">Edit</a> -->
-                                    <!-- <form action="{{ route('transaksi_daftar_ulang.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm">
-                                            Hapus
-                                        </button>
-                                    </form> -->
+                                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">
+                                        Detail
+                                    </a>
+
+                                    @if($item->status == 'belum_lunas')
+                                        <a href="{{ route('transaksi_daftar_ulang.bayar', $item->id) }}"
+                                            class="inline-flex items-center bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm">
+                                            <i data-lucide="credit-card" class="w-4 h-4 mr-1"></i>
+                                            Bayar Sisa Pembayaran
+                                        </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center py-4 text-gray-500">Belum ada data daftar ulang.</td>
+                            <td colspan="10" class="text-center py-4 text-gray-500">
+                                Belum ada data daftar ulang.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-      
     </div>
 </div>
 @endsection

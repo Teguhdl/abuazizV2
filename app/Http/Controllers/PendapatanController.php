@@ -14,9 +14,20 @@ class PendapatanController extends Controller
 {
     public function index()
     {
-        $data = Pendapatan::orderBy('tanggal_pendapatan', 'desc')->get();
+        $query = Pendapatan::orderBy('tanggal_pendapatan', 'desc');
+
+        // Auto filter berdasarkan role
+        $userRole = strtolower(auth()->user()->role ?? '');
+        if (str_contains($userRole, 'yayasan')) {
+            $query->where('jenis_pendapatan', 'yayasan');
+        } else {
+            $query->where('jenis_pendapatan', 'sekolah');
+        }
+
+        $data = $query->get();
         return view('pendapatan.index', compact('data'));
     }
+
 
     public function create()
     {
@@ -33,6 +44,9 @@ class PendapatanController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
+            $userRole = strtolower(auth()->user()->role ?? '');
+            $jenisPendapatan = str_contains($userRole, 'yayasan') ? 'yayasan' : 'sekolah';
+
             // Simpan pendapatan
             $pendapatan = Pendapatan::create([
                 'kode' => 'PD-' . strtoupper(Str::random(5)),
@@ -40,18 +54,17 @@ class PendapatanController extends Controller
                 'tanggal_pendapatan' => $request->tanggal_pendapatan,
                 'keterangan' => $request->keterangan,
                 'nominal' => $request->nominal,
+                'jenis_pendapatan' => $jenisPendapatan,
             ]);
 
-            // ----------------------------
             // Buat Jurnal Umum
-            // ----------------------------
             $header = JurnalHeader::create([
-                'nomor_jurnal' => 'PJ-' . date('YmdHis'), // PJ = Pendapatan
+                'nomor_jurnal' => 'PJ-' . date('YmdHis'),
                 'tanggal' => $pendapatan->tanggal_pendapatan,
                 'keterangan' => 'Pendapatan: ' . $pendapatan->nama,
             ]);
 
-            // Debit = Kas/Bank
+            // Debit: Kas
             $akunKas = Akun::where('nama_akun', 'Kas')->first();
             JurnalDetail::create([
                 'jurnal_header_id' => $header->id,
@@ -61,7 +74,7 @@ class PendapatanController extends Controller
                 'keterangan' => 'Penerimaan pendapatan: ' . $pendapatan->nama,
             ]);
 
-            // Kredit = Pendapatan (akun pendapatan umum)
+            // Kredit: Pendapatan
             $akunPendapatan = Akun::where('nama_akun', 'Pendapatan Lain-Lain')->first();
             JurnalDetail::create([
                 'jurnal_header_id' => $header->id,
@@ -74,7 +87,7 @@ class PendapatanController extends Controller
 
         return redirect()->route('pendapatan.index')->with('success', 'Pendapatan berhasil ditambahkan dan dijurnal.');
     }
-    
+
     public function edit($id)
     {
         $data = Pendapatan::findOrFail($id);
@@ -105,5 +118,34 @@ class PendapatanController extends Controller
     {
         Pendapatan::findOrFail($id)->delete();
         return response()->json(['success' => true]);
+    }
+
+    public function laporan(Request $request)
+    {
+        $from = $request->from;
+        $to = $request->to;
+
+        $query = Pendapatan::query();
+
+        // Filter berdasarkan role user
+        $userRole = strtolower(auth()->user()->role ?? '');
+        if (str_contains($userRole, 'yayasan')) {
+            $query->where('jenis_pendapatan', 'yayasan');
+        } else {
+            $query->where('jenis_pendapatan', 'sekolah');
+        }
+
+        // Filter tanggal
+        if ($from && $to) {
+            $query->whereBetween('tanggal_pendapatan', [$from, $to]);
+        } elseif ($from) {
+            $query->whereDate('tanggal_pendapatan', '>=', $from);
+        } elseif ($to) {
+            $query->whereDate('tanggal_pendapatan', '<=', $to);
+        }
+
+        $data = $query->orderBy('tanggal_pendapatan', 'asc')->get();
+
+        return view('laporan.dana_masuk', compact('data', 'from', 'to'));
     }
 }

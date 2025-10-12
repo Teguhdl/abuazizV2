@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Master Pembayaran Beban')
+@section('title', 'Master Pengeluaran Operasional Sekolah')
 @section('breadcrumb')
-<h1 class="text-xl font-semibold">Data Pembayaran Beban</h1>
+<h1 class="text-xl font-semibold">Data Pengeluaran Operasional Sekolah</h1>
 @endsection
 
 @section('content')
 <div class="container mx-auto p-6">
     <div class="bg-white shadow rounded-lg p-6">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold">Daftar Pembayaran Beban</h2>
+            <h2 class="text-lg font-bold">Daftar Pengeluaran Operasional Sekolah</h2>
             <a href="{{ route('pembayaran_beban.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Tambah</a>
         </div>
 

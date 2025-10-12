@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Pembayaran Beban')
+@section('title', 'Tambah Pengeluaran Operasional Sekolah')
 @section('breadcrumb')
-<h1 class="text-xl font-semibold">Tambah Pembayaran Beban</h1>
+<h1 class="text-xl font-semibold">Tambah Pengeluaran Operasional Sekolah</h1>
 @endsection
 
 @section('content')

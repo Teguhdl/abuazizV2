@@ -1,16 +1,30 @@
 @extends('layouts.app')
 
-@section('title', 'Master Pendapatan')
+@php
+    $role = strtolower(auth()->user()->role ?? '');
+    $jenisPendapatan = str_contains($role, 'yayasan') ? 'yayasan' : 'sekolah';
+    $labelJenis = $jenisPendapatan === 'yayasan' ? 'Dana Masuk Yayasan' : 'Dana Masuk Sekolah';
+@endphp
+
+@section('title', $labelJenis)
+
 @section('breadcrumb')
-<h1 class="text-xl font-semibold">Data Pendapatan</h1>
+<h1 class="text-xl font-semibold">
+    {{ $labelJenis }}
+</h1>
 @endsection
 
 @section('content')
 <div class="container mx-auto p-6">
     <div class="bg-white shadow rounded-lg p-6">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold">Daftar Pendapatan</h2>
-            <a href="{{ route('pendapatan.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Tambah</a>
+            <h2 class="text-lg font-bold">
+                {{ $labelJenis }}
+            </h2>
+            <a href="{{ route('pendapatan.create') }}" 
+               class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+               Tambah
+            </a>
         </div>
 
         <table class="min-w-full border">
@@ -19,7 +33,7 @@
                     <th class="border px-4 py-2">#</th>
                     <th class="border px-4 py-2">Kode</th>
                     <th class="border px-4 py-2">Nama</th>
-                    <th class="border px-4 py-2">Tanggal Pendapatan</th>
+                    <th class="border px-4 py-2">Tanggal</th>
                     <th class="border px-4 py-2">Nominal</th>
                     <th class="border px-4 py-2">Keterangan</th>
                 </tr>
@@ -38,12 +52,11 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center py-4">Belum ada data</td>
+                        <td colspan="6" class="text-center py-4">Belum ada data</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
-
 @endsection

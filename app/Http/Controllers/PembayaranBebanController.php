@@ -97,4 +97,27 @@ class PembayaranBebanController extends Controller
         $pembayaranBeban->delete();
         return redirect()->route('pembayaran_beban.index')->with('success', 'Pembayaran beban berhasil dihapus.');
     }
+
+    public function laporan(Request $request)
+    {
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $query = PembayaranBeban::with('akun');
+
+        // Filter tanggal jika diisi
+        if ($from && $to) {
+            $query->whereBetween('tanggal_pembayaran', [$from, $to]);
+        } elseif ($from) {
+            $query->whereDate('tanggal_pembayaran', '>=', $from);
+        } elseif ($to) {
+            $query->whereDate('tanggal_pembayaran', '<=', $to);
+        }
+
+        $data = $query->orderBy('tanggal_pembayaran', 'asc')->get();
+        $total = $data->sum('nominal');
+
+        // kirim juga $from dan $to supaya view tidak error
+        return view('laporan.dana_keluar', compact('data', 'total', 'from', 'to'));
+    }
 }

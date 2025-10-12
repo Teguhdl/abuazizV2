@@ -1,9 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController , TransaksiPendaftaranController ,  TransaksiDaftarUlangController , PendapatanController , PembayaranBebanController, JurnalUmumController , BukuBesarController};
-
-
+use App\Http\Controllers\{AuthController, AkunController, SekolahController, SiswaController, KelasController, PotonganBiayaController , RincianBiayaController , TransaksiPendaftaranController ,  TransaksiDaftarUlangController , PendapatanController , PembayaranBebanController, JurnalUmumController , BukuBesarController , TransaksiSppController , PengaturanSppController};
 
 /*
 |--------------------------------------------------------------------------
@@ -50,7 +48,10 @@ Route::resource('pendapatan', PendapatanController::class)->middleware('auth');
 Route::resource('pembayaran_beban', PembayaranBebanController::class)->middleware('auth');
 Route::get('jurnal', [JurnalUmumController::class, 'index'])->middleware('auth')->name('jurnal');
 Route::get('buku_besar', [BukuBesarController::class, 'index'])->middleware('auth')->name('buku_besar');
-
+Route::get('laporan-dana-masuk', [PendapatanController::class, 'laporan'])->middleware('auth')->name('laporan-dana-masuk');
+Route::get('laporan-dana-keluar', [PembayaranBebanController::class, 'laporan'])->middleware('auth')->name('laporan-dana-keluar');
+Route::resource('transaksi-spp', TransaksiSppController::class)->middleware('auth');
+Route::resource('pengaturan-spp', PengaturanSppController::class);
 // contoh halaman setelah login
 Route::get('/dashboard', function () {
     return view('dashboard');

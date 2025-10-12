@@ -13,5 +13,6 @@ class Pendapatan extends Model
         'keterangan',
         'tanggal_pendapatan',
         'nominal',
+        'jenis_pendapatan',
     ];
 }

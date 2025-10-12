@@ -31,6 +31,7 @@
                 <a href="{{ route('siswa.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Siswa</a><!-- YAYASAN, SEKOLAH -->
                 <a href="{{ route('rincian_biaya.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Rincian Biaya Transaksi</a><!-- YAYASAN, SEKOLAH -->
                 <a href="{{ route('potongan_biaya.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Potongan Biaya Transaksi</a><!-- YAYASAN, SEKOLAH -->
+                <a href="{{ route('pengaturan-spp.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Pengaturan SPP</a><!-- YAYASAN, SEKOLAH -->
             </div>
         </div>
 
@@ -46,8 +47,9 @@
             <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
                 <a href="{{ route('transaksi_pendaftaran.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pendaftaran Siswa</a>
                 <a href="{{ route('transaksi_daftar_ulang.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Daftar Ulang Siswa</a>
-                <a href="{{ route('pendapatan.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pendapatan</a>
-                <a href="{{ route('pembayaran_beban.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pembayaran Beban</a>
+                <a href="{{ route('pendapatan.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Dana Masuk</a>
+                <a href="{{ route('pembayaran_beban.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pengeluaran Operasional Sekolah</a>
+                <a href="{{ route('transaksi-spp.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pembayaran SPP</a>
 
             </div>
         </div>
@@ -64,6 +66,8 @@
             <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
                 <a href="{{ route('jurnal') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Jurnal Umum</a>
                 <a href="{{ route('buku_besar') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Buku Besar</a>
+                <a href="{{ route('laporan-dana-masuk') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Laporan Dana Masuk</a>
+                <a href="{{ route('laporan-dana-keluar') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Laporan Pengeluaran Operasional </a>
             </div>
         </div>
     </nav>

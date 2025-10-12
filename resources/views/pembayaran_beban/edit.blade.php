@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Pembayaran Beban')
+@section('title', 'Edit Pengeluaran Operasional Sekolah')
 @section('breadcrumb')
-<h1 class="text-xl font-semibold">Edit Pembayaran Beban</h1>
+<h1 class="text-xl font-semibold">Edit Pengeluaran Operasional Sekolah</h1>
 @endsection
 
 @section('content')

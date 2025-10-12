@@ -120,4 +120,42 @@ class PembayaranBebanController extends Controller
         // kirim juga $from dan $to supaya view tidak error
         return view('laporan.dana_keluar', compact('data', 'total', 'from', 'to'));
     }
+
+    public function print(Request $request)
+    {
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $query = PembayaranBeban::with('akun');
+
+        if ($from && $to) {
+            $query->whereBetween('tanggal_pembayaran', [$from, $to]);
+        } elseif ($from) {
+            $query->whereDate('tanggal_pembayaran', '>=', $from);
+        } elseif ($to) {
+            $query->whereDate('tanggal_pembayaran', '<=', $to);
+        }
+
+        $data = $query->orderBy('tanggal_pembayaran', 'asc')->get();
+        $total = $data->sum('nominal');
+
+        $periode = '';
+        if ($from && $to) {
+            $periode = \Carbon\Carbon::parse($from)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($to)->format('d M Y');
+        } elseif ($from) {
+            $periode = 'Mulai ' . \Carbon\Carbon::parse($from)->format('d M Y');
+        } elseif ($to) {
+            $periode = 'Sampai ' . \Carbon\Carbon::parse($to)->format('d M Y');
+        } else {
+            $periode = now()->translatedFormat('F Y');
+        }
+
+        return view('laporan.print-report', [
+            'type' => 'pengeluaran',
+            'title' => 'Laporan Pengeluaran Operasional',
+            'data' => $data,
+            'periode' => $periode,
+            'total' => $total
+        ]);
+    }
 }

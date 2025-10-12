@@ -16,8 +16,8 @@
     <div class="bg-white shadow rounded-lg p-6">
         {{-- Header Laporan --}}
         <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold">SD Abu Aziz</h1>
             <h2 class="text-xl font-semibold">{{ $labelJenis }}</h2>
+            <h1 class="text-2xl font-bold">SD Abu Aziz</h1>
             @php
                 $periode = '';
                 if ($from && $to) {
@@ -33,8 +33,8 @@
             <h3 class="text-lg">Periode {{ $periode }}</h3>
         </div>
 
-        {{-- Filter Tanggal --}}
-        <form method="GET" class="flex gap-4 mb-4">
+        {{-- Filter Tanggal + Button Print di samping --}}
+        <form method="GET" class="flex items-end gap-4 mb-4">
             <div>
                 <label for="from" class="block text-sm font-medium">Dari</label>
                 <input type="date" name="from" id="from" value="{{ request('from') }}" class="border rounded px-2 py-1">
@@ -43,8 +43,9 @@
                 <label for="to" class="block text-sm font-medium">Sampai</label>
                 <input type="date" name="to" id="to" value="{{ request('to') }}" class="border rounded px-2 py-1">
             </div>
-            <div class="flex items-end">
+            <div class="flex gap-2">
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Filter</button>
+                <a href="{{ route('pendapatan.print', request()->query()) }}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Print Laporan Pendapatan</a>
             </div>
         </form>
 

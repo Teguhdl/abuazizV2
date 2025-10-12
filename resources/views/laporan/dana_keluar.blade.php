@@ -10,8 +10,8 @@
     <div class="bg-white shadow rounded-lg p-6">
         {{-- Header Laporan --}}
         <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold">SD Abu Aziz</h1>
             <h2 class="text-xl font-semibold">Laporan Pengeluaran Operasional</h2>
+            <h1 class="text-2xl font-bold">SD Abu Aziz</h1>
             @php
             $periode = '';
             if ($from && $to) {
@@ -26,19 +26,20 @@
             @endphp
             <h3 class="text-lg">Periode {{ $periode }}</h3>
         </div>
-        {{-- Filter Tanggal --}}
-        <form method="GET" action="{{ route('laporan-dana-keluar') }}" class="flex flex-wrap gap-2 mb-4 items-end">
+        {{-- Filter Tanggal + Button Print di samping --}}
+        <form method="GET" class="flex items-end gap-4 mb-4">
             <div>
-                <label class="block text-sm font-semibold mb-1">Dari Tanggal</label>
-                <input type="date" name="from" value="{{ request('from') }}" class="border rounded p-2">
+                <label for="from" class="block text-sm font-medium">Dari</label>
+                <input type="date" name="from" id="from" value="{{ request('from') }}" class="border rounded px-2 py-1">
             </div>
             <div>
-                <label class="block text-sm font-semibold mb-1">Sampai Tanggal</label>
-                <input type="date" name="to" value="{{ request('to') }}" class="border rounded p-2">
+                <label for="to" class="block text-sm font-medium">Sampai</label>
+                <input type="date" name="to" id="to" value="{{ request('to') }}" class="border rounded px-2 py-1">
             </div>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                Tampilkan
-            </button>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Filter</button>
+                <a href="{{ route('pengeluaran.print', request()->query()) }}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Print Laporan Pengeluaran</a>
+            </div>
         </form>
 
         {{-- Tabel Laporan --}}

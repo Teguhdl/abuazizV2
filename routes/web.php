@@ -44,14 +44,21 @@ Route::get('/transaksi_daftar_ulang/{id}/bayar', [TransaksiDaftarUlangController
 Route::post('/transaksi_daftar_ulang/{id}/bayar', [TransaksiDaftarUlangController::class, 'bayarStore'])->name('transaksi_daftar_ulang.bayar.store');
 
 
-Route::resource('pendapatan', PendapatanController::class)->middleware('auth');
+Route::resource('pendapatan', PendapatanController::class)->except(['show'])->middleware('auth');
 Route::resource('pembayaran_beban', PembayaranBebanController::class)->middleware('auth');
 Route::get('jurnal', [JurnalUmumController::class, 'index'])->middleware('auth')->name('jurnal');
 Route::get('buku_besar', [BukuBesarController::class, 'index'])->middleware('auth')->name('buku_besar');
 Route::get('laporan-dana-masuk', [PendapatanController::class, 'laporan'])->middleware('auth')->name('laporan-dana-masuk');
 Route::get('laporan-dana-keluar', [PembayaranBebanController::class, 'laporan'])->middleware('auth')->name('laporan-dana-keluar');
 Route::resource('transaksi-spp', TransaksiSppController::class)->middleware('auth');
-Route::resource('pengaturan-spp', PengaturanSppController::class);
+Route::resource('pengaturan-spp', PengaturanSppController::class)->middleware('auth');
+
+// routes/web.php
+
+Route::get('jurnal/print', [JurnalUmumController::class, 'print'])->name('jurnal.print')->middleware('auth');
+Route::get('pendapatan/print', [PendapatanController::class, 'print'])->name('pendapatan.print')->middleware('auth');
+Route::get('pengeluaran/print', [PembayaranBebanController::class, 'print'])->name('pengeluaran.print')->middleware('auth');
+
 // contoh halaman setelah login
 Route::get('/dashboard', function () {
     return view('dashboard');

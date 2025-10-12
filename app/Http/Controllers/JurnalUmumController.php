@@ -131,4 +131,32 @@ class JurnalUmumController extends Controller
         $jurnal->delete();
         return response()->json(['success' => true]);
     }
+
+    public function print(Request $request)
+    {
+        $query = JurnalHeader::with('details.akun');
+
+        if ($request->from) $query->whereDate('tanggal', '>=', $request->from);
+        if ($request->to) $query->whereDate('tanggal', '<=', $request->to);
+
+        $jurnal = $query->orderBy('tanggal', 'desc')->get();
+
+        $periode = '';
+        if ($request->from && $request->to) {
+            $periode = \Carbon\Carbon::parse($request->from)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($request->to)->format('d M Y');
+        } elseif ($request->from) {
+            $periode = 'Mulai ' . \Carbon\Carbon::parse($request->from)->format('d M Y');
+        } elseif ($request->to) {
+            $periode = 'Sampai ' . \Carbon\Carbon::parse($request->to)->format('d M Y');
+        } else {
+            $periode = now()->translatedFormat('F Y');
+        }
+
+        return view('laporan.print-report', [
+            'type' => 'jurnal',
+            'title' => 'Jurnal Umum',
+            'data' => $jurnal,
+            'periode' => $periode
+        ]);
+    }
 }

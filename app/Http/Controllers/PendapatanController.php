@@ -148,4 +148,44 @@ class PendapatanController extends Controller
 
         return view('laporan.dana_masuk', compact('data', 'from', 'to'));
     }
+
+    public function print(Request $request)
+    {
+        $from = $request->from;
+        $to = $request->to;
+
+        $query = Pendapatan::query();
+
+        $userRole = strtolower(auth()->user()->role ?? '');
+        $jenisPendapatan = str_contains($userRole, 'yayasan') ? 'yayasan' : 'sekolah';
+        $query->where('jenis_pendapatan', $jenisPendapatan);
+
+        if ($from && $to) {
+            $query->whereBetween('tanggal_pendapatan', [$from, $to]);
+        } elseif ($from) {
+            $query->whereDate('tanggal_pendapatan', '>=', $from);
+        } elseif ($to) {
+            $query->whereDate('tanggal_pendapatan', '<=', $to);
+        }
+
+        $data = $query->orderBy('tanggal_pendapatan', 'asc')->get();
+
+        $periode = '';
+        if ($from && $to) {
+            $periode = \Carbon\Carbon::parse($from)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($to)->format('d M Y');
+        } elseif ($from) {
+            $periode = 'Mulai ' . \Carbon\Carbon::parse($from)->format('d M Y');
+        } elseif ($to) {
+            $periode = 'Sampai ' . \Carbon\Carbon::parse($to)->format('d M Y');
+        } else {
+            $periode = now()->translatedFormat('F Y');
+        }
+
+        return view('laporan.print-report', [
+            'type' => 'pendapatan',
+            'title' => 'Laporan Dana Masuk',
+            'data' => $data,
+            'periode' => $periode
+        ]);
+    }
 }

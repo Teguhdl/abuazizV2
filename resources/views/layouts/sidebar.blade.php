@@ -1,7 +1,7 @@
 <div id="sidebar" class="bg-white w-64 min-h-screen border-r transition-all duration-300 relative">
     <!-- Logo -->
     <div class="text-center py-6 border-b">
-        <img src="{{ asset('assets/logo2.png') }}" alt="Logo"
+        <img src="{{ asset('assets/logonew.png') }}" alt="Logo"
             class="w-[8.5rem] mx-auto transition-all duration-300 sidebar-logo">
         <h1 class="mt-2 font-bold text-sm sidebar-text">SD ABU AZIZ</h1>
     </div>

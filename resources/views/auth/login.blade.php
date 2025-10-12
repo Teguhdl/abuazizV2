@@ -11,7 +11,7 @@
 
     <div class="flex flex-col items-center w-full max-w-md">
         <!-- Logo -->
-        <img src="{{ asset('assets/logo2.png') }}"
+        <img src="{{ asset('assets/logonew.png') }}"
             alt="Logo SD Abu Aziz"
             class="w-32 h-32 mb-4">
 

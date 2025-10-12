@@ -13,7 +13,17 @@
 
             <div class="mb-4">
                 <label class="block mb-1 font-medium">Tahun Ajaran</label>
-                <input type="text" name="tahun_ajaran" class="border rounded w-full p-2" placeholder="Contoh: 2024/2025" required>
+                <select name="tahun_ajaran" id="tahun_ajaran" class="border rounded w-full p-2" required>
+                    <option value="">-- Pilih Tahun Ajaran --</option>
+                    @php
+                    $tahunSekarang = date('Y');
+                    $tahunMulai = $tahunSekarang - 5; // misal tampilkan 5 tahun ke belakang
+                    $tahunAkhir = $tahunSekarang + 5; // dan 5 tahun ke depan
+                    @endphp
+                    @for ($i = $tahunMulai; $i <= $tahunAkhir; $i++)
+                        <option value="{{ $i }}">{{ $i }}</option>
+                        @endfor
+                </select>
             </div>
 
             <div class="mb-4">

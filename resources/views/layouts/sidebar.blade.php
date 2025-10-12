@@ -6,6 +6,10 @@
         <h1 class="mt-2 font-bold text-sm sidebar-text">SD ABU AZIZ</h1>
     </div>
 
+    @php
+        $role = Auth::user()->role;
+    @endphp
+
     <!-- Menu -->
     <nav class="mt-4 space-y-2">
         <!-- Home -->
@@ -14,7 +18,8 @@
             <span class="ml-2 sidebar-text">Home</span>
         </a>
 
-        <!-- Master Data -->
+        <!-- ================= MASTER DATA ================= -->
+        @if (in_array($role, ['admin', 'tata_usaha', 'operasional_kesiswaan']))
         <div class="menu-item relative">
             <button class="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100">
                 <div class="flex items-center">
@@ -23,19 +28,27 @@
                 </div>
                 <i data-lucide="chevron-down" class="w-4 h-4 transition-transform"></i>
             </button>
-            <!-- Normal submenu -->
+
             <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
-                <a href="{{ route('akun.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Akun</a>    
-                <a href="{{ route('sekolah.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Sekolah</a> <!-- YAYASAN -->
-                <a href="{{ route('kelas.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Kelas</a> <!-- YAYASAN, SEKOLAH -->
-                <a href="{{ route('siswa.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Siswa</a><!-- YAYASAN, SEKOLAH -->
-                <a href="{{ route('rincian_biaya.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Rincian Biaya Transaksi</a><!-- YAYASAN, SEKOLAH -->
-                <a href="{{ route('potongan_biaya.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Potongan Biaya Transaksi</a><!-- YAYASAN, SEKOLAH -->
-                <a href="{{ route('pengaturan-spp.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Pengaturan SPP</a><!-- YAYASAN, SEKOLAH -->
+                @if(in_array($role, ['admin', 'tata_usaha']))
+                    <a href="{{ route('kelas.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Kelas</a>
+                    <a href="{{ route('rincian_biaya.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Rincian Biaya Transaksi</a>
+                    <a href="{{ route('potongan_biaya.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Potongan Biaya Transaksi</a>
+                    <a href="{{ route('pengaturan-spp.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Pengaturan SPP</a>
+                @endif
+                @if(in_array($role, ['admin', 'tata_usaha', 'operasional_kesiswaan']))
+                    <a href="{{ route('siswa.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Siswa</a>
+                @endif
+                @if($role == 'admin')
+                    <a href="{{ route('akun.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Akun</a>
+                    <a href="{{ route('sekolah.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Data Sekolah</a>
+                @endif
             </div>
         </div>
+        @endif
 
-        <!-- Transaksi -->
+        <!-- ================= TRANSAKSI ================= -->
+        @if (in_array($role, ['admin', 'tata_usaha', 'bendahara_yayasan', 'operasional_kesiswaan']))
         <div class="menu-item relative">
             <button class="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100">
                 <div class="flex items-center">
@@ -44,17 +57,27 @@
                 </div>
                 <i data-lucide="chevron-down" class="w-4 h-4 transition-transform"></i>
             </button>
-            <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
-                <a href="{{ route('transaksi_pendaftaran.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pendaftaran Siswa</a>
-                <a href="{{ route('transaksi_daftar_ulang.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Daftar Ulang Siswa</a>
-                <a href="{{ route('pendapatan.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Dana Masuk</a>
-                <a href="{{ route('pembayaran_beban.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pengeluaran Operasional Sekolah</a>
-                <a href="{{ route('transaksi-spp.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pembayaran SPP</a>
 
+            <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
+                @if(in_array($role, ['admin', 'tata_usaha', 'operasional_kesiswaan']))
+                    <a href="{{ route('transaksi_pendaftaran.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pendaftaran Siswa</a>
+                    <a href="{{ route('transaksi_daftar_ulang.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Daftar Ulang Siswa</a>
+                @endif
+
+                @if(in_array($role, ['admin', 'tata_usaha', 'bendahara_yayasan']))
+                    <a href="{{ route('pendapatan.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Dana Masuk</a>
+                    <a href="{{ route('pembayaran_beban.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pengeluaran Operasional</a>
+                @endif
+
+                @if(in_array($role, ['admin', 'tata_usaha']))
+                    <a href="{{ route('transaksi-spp.index') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Transaksi Pembayaran SPP</a>
+                @endif
             </div>
         </div>
+        @endif
 
-        <!-- Laporan -->
+        <!-- ================= LAPORAN ================= -->
+        @if (in_array($role, ['admin', 'tata_usaha', 'bendahara_yayasan', 'ketua_yayasan']))
         <div class="menu-item relative">
             <button class="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100">
                 <div class="flex items-center">
@@ -63,12 +86,16 @@
                 </div>
                 <i data-lucide="chevron-down" class="w-4 h-4 transition-transform"></i>
             </button>
+
             <div class="submenu max-h-0 overflow-hidden transition-all duration-300 ml-8 space-y-2 submenu-container">
-                <a href="{{ route('jurnal') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Jurnal Umum</a>
-                <a href="{{ route('buku_besar') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Buku Besar</a>
-                <a href="{{ route('laporan-dana-masuk') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Laporan Dana Masuk</a>
-                <a href="{{ route('laporan-dana-keluar') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Laporan Pengeluaran Operasional </a>
+                @if(in_array($role, ['admin', 'tata_usaha', 'bendahara_yayasan', 'ketua_yayasan']))
+                    <a href="{{ route('jurnal') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Jurnal Umum</a>
+                    <a href="{{ route('buku_besar') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Buku Besar</a>
+                    <a href="{{ route('laporan-dana-masuk') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Laporan Dana Masuk</a>
+                    <a href="{{ route('laporan-dana-keluar') }}" class="block px-2 py-1 hover:bg-gray-100 rounded">Laporan Pengeluaran Operasional</a>
+                @endif
             </div>
         </div>
+        @endif
     </nav>
 </div>
